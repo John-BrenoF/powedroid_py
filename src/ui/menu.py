@@ -57,6 +57,7 @@ def run_menu(stdscr):
         ("", "Ativar ADB Wi-Fi"),
         ("", "Conectar via IP"),
         ("", "Listar Fastboot"),
+        ("", "Ligar (Fastboot)"),
         ("", "Reiniciar Fastboot"),
         ("", "Sair")
     ]
@@ -176,8 +177,10 @@ def run_menu(stdscr):
             elif current == 8:
                 out = fastboot.devices()
             elif current == 9:
-                out = fastboot.reboot()
+                out = fastboot.boot()
             elif current == 10:
+                out = fastboot.reboot()
+            elif current == 11:
                 sys.exit()
 
             status = check_output(out)

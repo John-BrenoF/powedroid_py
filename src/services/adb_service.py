@@ -32,8 +32,21 @@ class ADBService:
     def reboot(self, serial=None):
         return self._execute_on_devices(["reboot"], serial)
 
+    def is_screen_on(self, serial):
+        out = self.executor.run(["adb", "-s", serial, "shell", "dumpsys", "power"])
+        return "mWakefulness=Awake" in out
+
     def wake(self, serial=None):
-        return self._execute_on_devices(["shell", "input", "keyevent", "26"], serial)
+        devices = [serial] if serial else self.get_authorized_devices()
+        if not devices:
+            return "Erro: Nenhum dispositivo autorizado encontrado."
+        results = []
+        for dev in devices:
+            if not self.is_screen_on(dev):
+                results.append(self.executor.run(["adb", "-s", dev, "shell", "input", "keyevent", "26"]))
+            else:
+                results.append(f"Tela de {dev} já está ligada.")
+        return "\n".join(results)
 
     def swipe(self, serial=None):
         return self._execute_on_devices(["shell", "input", "swipe", "300", "1000", "300", "300"], serial)
