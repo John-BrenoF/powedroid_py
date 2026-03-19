@@ -59,3 +59,11 @@ class ADBService:
 
     def connect_wifi(self, ip):
         return self.executor.run(["adb", "connect", f"{ip}:5555"])
+
+    def get_battery_level(self, serial):
+        out = self.executor.run(["adb", "-s", serial, "shell", "dumpsys", "battery"])
+        if out and "level:" in out:
+            for line in out.split('\n'):
+                if "level:" in line:
+                    return line.split(':')[1].strip() + "%"
+        return "N/A"
