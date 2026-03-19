@@ -39,7 +39,7 @@ class ADBService:
         return self._execute_on_devices(["shell", "input", "swipe", "300", "1000", "300", "300"], serial)
 
     def send_pin(self, pin, serial=None):
-        return self._execute_on_devices(["shell", f"input text {pin} && input keyevent 66"], serial)
+        return self._execute_on_devices(["shell", f"input keyevent 224 && input keyevent 82 && sleep 1 && input text {pin} && input keyevent 66"], serial)
 
     def enable_wifi(self, serial=None):
         return self._execute_on_devices(["tcpip", "5555"], serial)
