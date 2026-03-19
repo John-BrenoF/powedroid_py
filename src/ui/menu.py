@@ -49,6 +49,7 @@ def run_menu(stdscr):
 
     menu = [
         ("", "Listar dispositivos (ADB)"),
+        ("", "Selecionar Alvo"),
         ("", "Reiniciar dispositivo"),
         ("", "Ligar tela (Power)"),
         ("", "Desbloquear (Swipe)"),
@@ -61,6 +62,7 @@ def run_menu(stdscr):
     ]
 
     current = 0
+    target_device = None
 
     while True:
         stdscr.clear()
@@ -72,7 +74,7 @@ def run_menu(stdscr):
             stdscr.addstr(i, w//2 - len(line)//2, line)
             stdscr.attroff(curses.color_pair(4))
 
-        subtitle = "PY :: Android Control Interface"
+        subtitle = f"PY :: {target_device if target_device else 'Todos os Dispositivos'}"
         stdscr.addstr(6, w//2 - len(subtitle)//2, subtitle)
 
         box_width = 54
@@ -116,32 +118,66 @@ def run_menu(stdscr):
             if current == 0:
                 out = adb.devices()
             elif current == 1:
-                out = adb.reboot()
+                # Lógica de Seleção de Dispositivo
+                devs = adb.get_authorized_devices()
+                if not devs:
+                    out = "Nenhum dispositivo autorizado encontrado."
+                else:
+                    dev_opts = devs + ["Todos (Resetar)"]
+                    d_cur = 0
+                    while True:
+                        dh, dw = stdscr.getmaxyx()
+                        dbox_h = len(dev_opts) + 4
+                        dbox_w = 40
+                        dy, dx = dh//2 - dbox_h//2, dw//2 - dbox_w//2
+                        
+                        draw_box(stdscr, dy, dx, dbox_h, dbox_w, "Escolher Dispositivo")
+                        
+                        for i, d in enumerate(dev_opts):
+                            prefix = " -> " if i == d_cur else "    "
+                            attr = curses.color_pair(1) | curses.A_BOLD if i == d_cur else curses.color_pair(6)
+                            stdscr.attron(attr)
+                            stdscr.addstr(dy + 2 + i, dx + 2, (prefix + d).ljust(dbox_w - 4))
+                            stdscr.attroff(attr)
+                        
+                        key_d = stdscr.getch()
+                        if key_d == curses.KEY_UP and d_cur > 0: d_cur -= 1
+                        elif key_d == curses.KEY_DOWN and d_cur < len(dev_opts) - 1: d_cur += 1
+                        elif key_d in [10, 13]:
+                            selected = dev_opts[d_cur]
+                            target_device = None if selected == "Todos (Resetar)" else selected
+                            break
+                        elif key_d == 27: # ESC
+                            break
+                    out = f"Alvo definido: {target_device if target_device else 'Todos'}"
+
             elif current == 2:
-                out = adb.wake()
+                out = adb.reboot(target_device)
             elif current == 3:
-                out = adb.swipe()
+                out = adb.wake(target_device)
             elif current == 4:
+                out = adb.swipe(target_device)
+            elif current == 5:
                 draw_box(stdscr, h//2-2, w//2-15, 5, 30, "Entrada")
                 stdscr.addstr(h//2, w//2-13, "Digite o PIN: ")
                 curses.echo()
                 pin = stdscr.getstr().decode()
                 curses.noecho()
-                out = adb.send_pin(pin)
-            elif current == 5:
-                out = adb.enable_wifi()
+                out = adb.send_pin(pin, target_device)
             elif current == 6:
+                out = adb.enable_wifi(target_device)
+            elif current == 7:
                 draw_box(stdscr, h//2-2, w//2-15, 5, 30, "Entrada")
                 stdscr.addstr(h//2, w//2-13, "Digite o IP: ")
                 curses.echo()
                 ip = stdscr.getstr().decode()
                 curses.noecho()
                 out = adb.connect_wifi(ip)
-            elif current == 7:
-                out = fastboot.devices()
             elif current == 8:
-                out = fastboot.reboot()
+                out = fastboot.devices()
             elif current == 9:
+                out = fastboot.reboot()
+            elif current == 10:
                 sys.exit()
 
             status = check_output(out)
