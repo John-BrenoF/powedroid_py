@@ -4,6 +4,7 @@ from pyfiglet import figlet_format
 from src.core.executor import CommandExecutor
 from src.services.adb_service import ADBService
 from src.services.fastboot_service import FastbootService
+from src.ui.statusbar import StatusBar
 
 
 def start_ui():
@@ -36,6 +37,7 @@ def run_menu(stdscr):
     executor = CommandExecutor()
     adb = ADBService(executor)
     fastboot = FastbootService(executor)
+    statusbar = StatusBar(adb)
 
     curses.curs_set(0)
     curses.start_color()
@@ -64,6 +66,7 @@ def run_menu(stdscr):
 
     current = 0
     target_device = None
+    last_status = "Aguardando comando..."
 
     while True:
         stdscr.clear()
@@ -103,8 +106,10 @@ def run_menu(stdscr):
 
         footer = " [↑↓] Navegar  [ENTER] Selecionar "
         stdscr.attron(curses.color_pair(5))
-        stdscr.addstr(h-2, w//2 - len(footer)//2, footer)
+        stdscr.addstr(h-3, w//2 - len(footer)//2, footer)
         stdscr.attroff(curses.color_pair(5))
+
+        statusbar.draw(stdscr, h, w, target_device, last_status)
 
         stdscr.refresh()
         key = stdscr.getch()
@@ -184,6 +189,7 @@ def run_menu(stdscr):
                 sys.exit()
 
             status = check_output(out)
+            last_status = status + (" Sucesso" if status == "[ OK ]" else " Falha")
 
             stdscr.clear()
 
@@ -207,6 +213,8 @@ def run_menu(stdscr):
                     stdscr.addstr(4 + idx, 4, line[:res_w-4])
             else:
                 stdscr.addstr(5, 4, "Sem resposta ou saída vazia.")
+
+            statusbar.draw(stdscr, h, w, target_device, last_status)
 
             stdscr.attron(curses.A_BLINK)
             stdscr.addstr(h-2, 2, "Pressione qualquer tecla para voltar...")
