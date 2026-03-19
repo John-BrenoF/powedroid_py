@@ -40,12 +40,12 @@ def run_menu(stdscr):
     curses.curs_set(0)
     curses.start_color()
 
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_CYAN)    # seleção (alto contraste)
-    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)   # ok
-    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)     # erro
-    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK) # título (estilo cyber)
-    curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_BLACK)    # bordas (azul escuro)
-    curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK)  # ícones (amarelo)
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_CYAN)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
     menu = [
         ("", "Listar dispositivos (ADB)"),
@@ -66,7 +66,6 @@ def run_menu(stdscr):
         stdscr.clear()
         h, w = stdscr.getmaxyx()
 
-        # ===== TÍTULO ASCII =====
         title = figlet_format("POWEDROID", font="small")
         for i, line in enumerate(title.splitlines()):
             stdscr.attron(curses.color_pair(4))
@@ -76,7 +75,6 @@ def run_menu(stdscr):
         subtitle = "PY :: Android Control Interface"
         stdscr.addstr(6, w//2 - len(subtitle)//2, subtitle)
 
-        # ===== CAIXA =====
         box_width = 54
         box_height = len(menu) + 2
         start_x = w // 2 - box_width // 2
@@ -84,7 +82,6 @@ def run_menu(stdscr):
 
         draw_box(stdscr, start_y, start_x, box_height, box_width, "Menu Principal")
 
-        # ===== MENU =====
         for i, (icon, label) in enumerate(menu):
             prefix = " ▶ " if i == current else "   "
             x = start_x + 2
@@ -101,7 +98,6 @@ def run_menu(stdscr):
                 stdscr.attroff(curses.color_pair(6))
                 stdscr.addstr(y, x + len(prefix) + 3, label)
 
-        # ===== FOOTER =====
         footer = " [↑↓] Navegar  [ENTER] Selecionar "
         stdscr.attron(curses.color_pair(5))
         stdscr.addstr(h-2, w//2 - len(footer)//2, footer)
@@ -152,7 +148,6 @@ def run_menu(stdscr):
 
             stdscr.clear()
 
-            # STATUS
             if status == "[ OK ]":
                 stdscr.attron(curses.color_pair(2))
             else:
@@ -162,7 +157,6 @@ def run_menu(stdscr):
             stdscr.attroff(curses.color_pair(2))
             stdscr.attroff(curses.color_pair(3))
 
-            # OUTPUT BOX (Maior e mais organizada)
             res_h = h - 6
             res_w = w - 4
             draw_box(stdscr, 3, 2, res_h, res_w, "Saída do Comando")
